@@ -1,8 +1,64 @@
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
+import { AppProps } from 'next/app';
+import Head from 'next/head';
+import { MantineProvider, ColorSchemeProvider, ColorScheme } from '@mantine/core';
+import { useEffect, useState } from 'react';
+import { useColorScheme } from '@mantine/hooks';
+import { getCookie, setCookies } from 'cookies-next';
+import { GetServerSidePropsContext } from 'next';
+import { AppShell, Navbar, Header, Aside, Footer } from '@mantine/core';
+import { Layout } from '../components/Layout';
 
-function MyApp({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
+const COLOR_THEME_COOKIE_NAME = 'train-geo-color-scheme';
+const COLOR_THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
+
+export default function App(props: AppProps & { colorScheme: ColorScheme }) {
+  const { Component, pageProps } = props;
+  const [colorScheme, setColorScheme] = useState<ColorScheme>(props.colorScheme);
+  // hook will return either 'dark' or 'light' on client
+  // and always 'light' during ssr as window.matchMedia is not available
+  const preferredColorScheme = useColorScheme();
+
+  const toggleColorScheme = (value?: ColorScheme) => {
+    const nextColorScheme = value || (colorScheme === 'dark' ? 'light' : 'dark');
+    setColorScheme(nextColorScheme);
+    // when color scheme is updated save it to cookie
+    setCookies(COLOR_THEME_COOKIE_NAME, nextColorScheme, {
+      maxAge: COLOR_THEME_COOKIE_MAX_AGE,
+    });
+  };
+
+  useEffect(() => {
+    setColorScheme(preferredColorScheme);
+    // when color scheme is updated save it to cookie
+    setCookies(COLOR_THEME_COOKIE_NAME, preferredColorScheme, {
+      maxAge: COLOR_THEME_COOKIE_MAX_AGE,
+    });
+  }, [preferredColorScheme]);
+
+  return (
+    <>
+      <Head>
+        <title>Page title</title>
+        <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
+      </Head>
+      <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
+        <MantineProvider
+          withGlobalStyles
+          withNormalizeCSS
+          theme={{
+            colorScheme,
+          }}
+        >
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+        </MantineProvider>
+      </ColorSchemeProvider>
+    </>
+  );
 }
 
-export default MyApp
+App.getInitialProps = ({ ctx }: { ctx: GetServerSidePropsContext }) => ({
+  // get color scheme from cookie
+  colorScheme: getCookie(COLOR_THEME_COOKIE_NAME, ctx) || 'light',
+});
