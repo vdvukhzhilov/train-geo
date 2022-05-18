@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useState } from 'react';
+import React, { PropsWithChildren, useCallback, useState } from 'react';
 import {
   AppShell,
   Navbar,
@@ -18,6 +18,8 @@ export const Layout: React.FC<PropsWithChildren<{}>> = (props) => {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
 
+  const handleNavLinkClick = useCallback(() => setOpened(false), []);
+
   return (
     <AppShell
       styles={{
@@ -31,7 +33,7 @@ export const Layout: React.FC<PropsWithChildren<{}>> = (props) => {
       navbar={
         <Navbar p="md" hiddenBreakpoint="sm" hidden={!opened} width={{ sm: 200, lg: 300 }}>
           <Link href="/transliterate" passHref>
-            <Anchor>Проверка правописания</Anchor>
+            <Anchor onClick={handleNavLinkClick}>Проверка правописания</Anchor>
           </Link>
         </Navbar>
       }
