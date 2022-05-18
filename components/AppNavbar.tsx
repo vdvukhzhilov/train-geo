@@ -1,15 +1,27 @@
-import { Anchor, Burger, MediaQuery, Navbar, useMantineTheme } from '@mantine/core';
+import {
+  Anchor,
+  Burger,
+  MediaQuery,
+  Navbar,
+  useMantineTheme,
+  Group,
+  ThemeIcon,
+  Text,
+  MantineColor,
+  ThemeIconVariant,
+} from '@mantine/core';
 import Link from 'next/link';
 import {
   createContext,
   Dispatch,
+  MouseEventHandler,
   PropsWithChildren,
   SetStateAction,
   useCallback,
   useContext,
   useState,
 } from 'react';
-
+import { Writing } from 'tabler-icons-react';
 type AppNavbarContextState = {
   opened: boolean;
   setOpened: Dispatch<SetStateAction<boolean>>;
@@ -32,16 +44,54 @@ export function AppNavbarContextProvider(props: PropsWithChildren<{}>) {
   );
 }
 
+type AppNavbarItemProps = {
+  href: string;
+  icon?: React.ReactNode;
+  iconColor?: MantineColor;
+  iconVariant?: ThemeIconVariant;
+  text: string;
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
+};
+
+const AppNavbarItem: React.FC<AppNavbarItemProps> = (props) => {
+  const { href, icon, text, iconColor, onClick, iconVariant = 'light' } = props;
+  return (
+    <Link href={href} passHref>
+      <Anchor mb="xl" onClick={onClick}>
+        {icon ? (
+          <Group>
+            <ThemeIcon color={iconColor} variant={iconVariant}>
+              {icon}
+            </ThemeIcon>
+            <Text size="sm">{text}</Text>
+          </Group>
+        ) : (
+          <Text size="sm">{text}</Text>
+        )}
+      </Anchor>
+    </Link>
+  );
+};
+
 export const AppNavbar = () => {
   const { opened, setOpened } = useContext(AppNavbarContext);
+  const { spacing } = useMantineTheme();
 
   const handleNavLinkClick = useCallback(() => setOpened(false), []);
 
   return (
-    <Navbar p="md" hiddenBreakpoint="sm" hidden={!opened} width={{ sm: 200, lg: 300 }}>
-      <Link href="/transliterate" passHref>
-        <Anchor onClick={handleNavLinkClick}>Проверка правописания</Anchor>
-      </Link>
+    <Navbar
+      p="md"
+      hiddenBreakpoint="sm"
+      hidden={!opened}
+      width={{ sm: spacing.xl * 11, lg: spacing.xl * 12 }}
+    >
+      <AppNavbarItem
+        onClick={handleNavLinkClick}
+        icon={<Writing />}
+        href="/transliterate"
+        text="Проверка правописания"
+      />
     </Navbar>
   );
 };
