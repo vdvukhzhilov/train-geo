@@ -10,10 +10,8 @@ type Props = {
   initialValues?: TransliterateSettings;
 };
 
-export const TransliterateForm: React.FC<Props> = ({
-  onSuccess,
-  initialValues = DEFAULT_SETTINGS,
-}) => {
+function useTransliterateForm(props: Required<Pick<Props, 'initialValues' | 'onSuccess'>>) {
+  const { initialValues, onSuccess } = props;
   const [loading, setLoading] = useState(false);
   const form = useForm({
     initialValues: initialValues,
@@ -61,22 +59,38 @@ export const TransliterateForm: React.FC<Props> = ({
     });
   };
 
+  return {
+    handleSubmit: form.onSubmit(handleSubmit),
+    getInputProps: form.getInputProps,
+    loading,
+  };
+}
+
+export const TransliterateForm: React.FC<Props> = ({
+  onSuccess,
+  initialValues = DEFAULT_SETTINGS,
+}) => {
+  const { loading, getInputProps, handleSubmit } = useTransliterateForm({
+    initialValues,
+    onSuccess,
+  });
+
   return (
     <Paper shadow="md" radius="md" mb="md" p="md" withBorder style={{ position: 'relative' }}>
       <LoadingOverlay visible={loading} />
-      <form onSubmit={form.onSubmit(handleSubmit)}>
+      <form onSubmit={handleSubmit}>
         <TextInput
           required
           type="number"
           label="Минимальное число символов"
-          {...form.getInputProps('minLetters')}
+          {...getInputProps('minLetters')}
         />
         <TextInput
           mt={'xs'}
           required
           type="number"
           label="Максимальное число символов"
-          {...form.getInputProps('maxLetters')}
+          {...getInputProps('maxLetters')}
         />
 
         <Checkbox
@@ -84,7 +98,7 @@ export const TransliterateForm: React.FC<Props> = ({
           mb="sm"
           required
           label="Разрешить одинаковые буквы рядом"
-          {...form.getInputProps('allowDoubles', {
+          {...getInputProps('allowDoubles', {
             type: 'checkbox',
           })}
         />
@@ -113,7 +127,7 @@ export const TransliterateForm: React.FC<Props> = ({
               label: 'Без разделителя',
             },
           ]}
-          {...form.getInputProps('divider')}
+          {...getInputProps('divider')}
         />
 
         <Group position="right" mt="md">
