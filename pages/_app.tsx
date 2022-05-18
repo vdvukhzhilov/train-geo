@@ -5,8 +5,7 @@ import { useEffect, useState } from 'react';
 import { useColorScheme } from '@mantine/hooks';
 import { getCookie, setCookies } from 'cookies-next';
 import { GetServerSidePropsContext } from 'next';
-import { AppShell, Navbar, Header, Aside, Footer } from '@mantine/core';
-import { Layout } from '../components/Layout';
+import { AppLayout } from '../components/AppLayout';
 
 const COLOR_THEME_COOKIE_NAME = 'train-geo-color-scheme';
 const COLOR_THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
@@ -49,9 +48,9 @@ export default function App(props: AppProps & { colorScheme: ColorScheme }) {
             colorScheme,
           }}
         >
-          <Layout>
+          <AppLayout>
             <Component {...pageProps} />
-          </Layout>
+          </AppLayout>
         </MantineProvider>
       </ColorSchemeProvider>
     </>
