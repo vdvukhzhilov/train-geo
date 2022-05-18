@@ -7,7 +7,10 @@ import {
   Container,
   Skeleton,
   useMantineTheme,
+  ActionIcon,
+  Stack,
 } from '@mantine/core';
+import { Settings } from 'tabler-icons-react';
 import { useMediaQuery } from '@mantine/hooks';
 import { useState } from 'react';
 import { RU_LETTERS, RU_TO_GE } from '../constants/alphabet';
@@ -73,6 +76,53 @@ function useTransliterateExercise(settings: TransliterateSettings) {
   };
 }
 
+type ButtonsProps = {
+  loading: boolean;
+  isLessThanMd: boolean;
+  availableToGenerate: boolean;
+  handleGenerate: any;
+  handleShowInGe: any;
+  onChangeSettings: any;
+};
+
+const Buttons: React.FC<ButtonsProps> = (props) => {
+  const {
+    availableToGenerate,
+    handleGenerate,
+    handleShowInGe,
+    isLessThanMd,
+    loading,
+    onChangeSettings,
+  } = props;
+
+  const actionButton = availableToGenerate ? (
+    <Button loading={loading} onClick={handleGenerate}>
+      {isLessThanMd ? 'Сгенерировать' : 'Сгенерировать набор букв'}
+    </Button>
+  ) : (
+    <Button loading={loading} onClick={handleShowInGe}>
+      {isLessThanMd ? 'Показать ответ' : 'Показать набор букв на грузинском'}
+    </Button>
+  );
+
+  const settingButton = isLessThanMd ? (
+    <ActionIcon variant="outline" ml="auto" onClick={onChangeSettings}>
+      <Settings />
+    </ActionIcon>
+  ) : (
+    <Button ml="auto" onClick={onChangeSettings} variant="subtle">
+      Изменить настройки
+    </Button>
+  );
+
+  return (
+    <Group mb={isLessThanMd ? 'md' : undefined}>
+      {actionButton}
+      {settingButton}
+    </Group>
+  );
+};
+
 export const TransliterateExercise: React.FC<Props> = (props) => {
   const { onChangeSettings, settings } = props;
   const {
@@ -89,37 +139,78 @@ export const TransliterateExercise: React.FC<Props> = (props) => {
   const { breakpoints } = useMantineTheme();
   const isLessThanMd = useMediaQuery(`(max-width: ${breakpoints.md}px)`);
 
+  if (isLessThanMd) {
+    return (
+      <Stack>
+        <Buttons
+          availableToGenerate={availableToGenerate}
+          handleGenerate={handleGenerate}
+          handleShowInGe={handleShowInGe}
+          isLessThanMd={isLessThanMd}
+          onChangeSettings={onChangeSettings}
+          loading={currentWordLoading || currentWordInGeLoading}
+        />
+        <Paper shadow="md" radius="md" p="md" withBorder>
+          {currentWord && <Text size={isLessThanMd ? 'md' : 'xl'}>{currentWord}</Text>}
+          {currentWordLoading && (
+            <Skeleton width={'70%'} height={isLessThanMd ? 24 : 31} radius="md" />
+          )}
+          {showCurrentWordPlaceholder && (
+            <Text
+              key={'placeholder'}
+              size={isLessThanMd ? 'sm' : 'lg'}
+              sx={{ height: isLessThanMd ? undefined : 31 }}
+              color="dimmed"
+            >
+              Нажмите кнопку "Сгенерировать набор букв"
+            </Text>
+          )}
+        </Paper>
+        <Paper shadow="md" radius="md" p="md" withBorder>
+          {currentWordInGe && <Text size={isLessThanMd ? 'md' : 'xl'}>{currentWordInGe}</Text>}
+          {currentWordInGeLoading && (
+            <Skeleton width={'70%'} height={isLessThanMd ? 24 : 31} radius="md" />
+          )}
+          {currentWordInGePlaceholder && (
+            <Text
+              key={'placeholder2'}
+              size={isLessThanMd ? 'sm' : 'lg'}
+              sx={{ height: isLessThanMd ? undefined : 31 }}
+              color="dimmed"
+            >
+              Тут будет показано правильное написание
+            </Text>
+          )}
+        </Paper>
+      </Stack>
+    );
+  }
   return (
     <Container fluid>
       <Grid grow>
         <Grid.Col span={12}>
-          <Group>
-            {availableToGenerate ? (
-              <Button
-                loading={currentWordLoading || currentWordInGeLoading}
-                onClick={handleGenerate}
-              >
-                Сгенерировать набор букв
-              </Button>
-            ) : (
-              <Button
-                loading={currentWordLoading || currentWordInGeLoading}
-                onClick={handleShowInGe}
-              >
-                Показать набор букв на грузинском
-              </Button>
-            )}
-            <Button ml="auto" onClick={onChangeSettings} variant="subtle">
-              Изменить настройки
-            </Button>
-          </Group>
+          <Buttons
+            availableToGenerate={availableToGenerate}
+            handleGenerate={handleGenerate}
+            handleShowInGe={handleShowInGe}
+            isLessThanMd={isLessThanMd}
+            onChangeSettings={onChangeSettings}
+            loading={currentWordLoading || currentWordInGeLoading}
+          />
         </Grid.Col>
         <Grid.Col mt={isLessThanMd ? 'xs' : 'md'} span={isLessThanMd ? 12 : 6}>
           <Paper shadow="md" radius="md" mb="md" p="md" withBorder>
-            {currentWord && <Text size={'xl'}>{currentWord}</Text>}
-            {currentWordLoading && <Skeleton width={'70%'} height={31} radius="md" />}
+            {currentWord && <Text size={isLessThanMd ? 'md' : 'xl'}>{currentWord}</Text>}
+            {currentWordLoading && (
+              <Skeleton width={'70%'} height={isLessThanMd ? 24 : 31} radius="md" />
+            )}
             {showCurrentWordPlaceholder && (
-              <Text size={'lg'} sx={{ height: 31 }} color="dimmed">
+              <Text
+                key={'placeholder'}
+                size={isLessThanMd ? 'sm' : 'lg'}
+                sx={{ height: isLessThanMd ? undefined : 31 }}
+                color="dimmed"
+              >
                 Нажмите кнопку "Сгенерировать набор букв"
               </Text>
             )}
@@ -127,10 +218,17 @@ export const TransliterateExercise: React.FC<Props> = (props) => {
         </Grid.Col>
         <Grid.Col mt={isLessThanMd ? 'xs' : 'md'} span={isLessThanMd ? 12 : 6}>
           <Paper shadow="md" radius="md" mb="md" p="md" withBorder>
-            {currentWordInGe && <Text size={'xl'}>{currentWordInGe}</Text>}
-            {currentWordInGeLoading && <Skeleton width={'70%'} height={31} radius="md" />}
+            {currentWordInGe && <Text size={isLessThanMd ? 'md' : 'xl'}>{currentWordInGe}</Text>}
+            {currentWordInGeLoading && (
+              <Skeleton width={'70%'} height={isLessThanMd ? 24 : 31} radius="md" />
+            )}
             {currentWordInGePlaceholder && (
-              <Text size={'lg'} sx={{ height: 31 }} color="dimmed">
+              <Text
+                key={'placeholder2'}
+                size={isLessThanMd ? 'sm' : 'lg'}
+                sx={{ height: isLessThanMd ? undefined : 31 }}
+                color="dimmed"
+              >
                 Тут будет показано правильное написание
               </Text>
             )}
