@@ -1,0 +1,4 @@
+type WordsToLearn {
+    ru: String
+    ge: String
+}

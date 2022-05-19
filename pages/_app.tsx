@@ -27,18 +27,23 @@ export default function App(props: AppProps & { colorScheme: ColorScheme }) {
   };
 
   useEffect(() => {
-    setColorScheme(preferredColorScheme);
-    // when color scheme is updated save it to cookie
-    setCookies(COLOR_THEME_COOKIE_NAME, preferredColorScheme, {
-      maxAge: COLOR_THEME_COOKIE_MAX_AGE,
-    });
-  }, [preferredColorScheme]);
+    if (preferredColorScheme !== colorScheme) {
+      setColorScheme(preferredColorScheme);
+      // when color scheme is updated save it to cookie
+      setCookies(COLOR_THEME_COOKIE_NAME, preferredColorScheme, {
+        maxAge: COLOR_THEME_COOKIE_MAX_AGE,
+      });
+    }
+  }, [preferredColorScheme, colorScheme]);
 
   return (
     <>
       <Head>
         <title>Page title</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1"
+        />
       </Head>
       <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
         <MantineProvider

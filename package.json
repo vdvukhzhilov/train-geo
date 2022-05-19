@@ -40,6 +40,8 @@
     "@mantine/next": "4.2.5",
     "@mantine/notifications": "4.2.5",
     "cookies-next": "^2.0.4",
+    "faunadb": "^4.5.4",
+    "graphql-request": "^4.2.0",
     "next": "12.1.6",
     "react": "18.1.0",
     "react-dom": "18.1.0",

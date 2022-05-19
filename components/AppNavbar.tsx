@@ -21,7 +21,7 @@ import {
   useContext,
   useState,
 } from 'react';
-import { Writing } from 'tabler-icons-react';
+import { Writing, Pencil } from 'tabler-icons-react';
 type AppNavbarContextState = {
   opened: boolean;
   setOpened: Dispatch<SetStateAction<boolean>>;
@@ -91,6 +91,12 @@ export const AppNavbar = () => {
         icon={<Writing />}
         href="/transliterate"
         text="Проверка правописания"
+      />
+      <AppNavbarItem
+        onClick={handleNavLinkClick}
+        icon={<Pencil />}
+        href="/words"
+        text="Слова на проверку"
       />
     </Navbar>
   );

@@ -1,9 +1,10 @@
 import { Divider, Title, useMantineTheme } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
-import { FC, Fragment, PropsWithChildren } from 'react';
+import { FC, Fragment, PropsWithChildren, useMemo } from 'react';
 
 export const PageTitle: FC<PropsWithChildren<{}>> = (props) => {
   const { breakpoints, fontSizes } = useMantineTheme();
+
   const isLessThanMd = useMediaQuery(`(max-width: ${breakpoints.md}px)`);
 
   return (
@@ -20,7 +21,11 @@ export const PageTitle: FC<PropsWithChildren<{}>> = (props) => {
       >
         {props.children}
       </Title>
-      <Divider mb={isLessThanMd ? 'lg' : 'xl'} />
+      {isLessThanMd ? (
+        <Divider key="DividerMobile" mb={'lg'} />
+      ) : (
+        <Divider key="DividerDesktop" mb={'xl'} />
+      )}
     </Fragment>
   );
 };
