@@ -16,6 +16,14 @@ export const RU_TO_GE = {
   м: 'მ',
   в: 'ვ',
   з: 'ზ',
+  ж: 'ჟ',
+  ш: 'შ',
+  т: 'ტ',
+  "г'": 'ღ',
+  к: 'კ',
+  "к'": 'ქ',
+  п: 'პ',
+  "п'": 'ფ',
 } as const;
 
 export const RU_LETTERS = Object.keys(RU_TO_GE) as (keyof typeof RU_TO_GE)[];
