@@ -96,7 +96,6 @@ export const TransliterateForm: React.FC<Props> = ({
         <Checkbox
           mt={'md'}
           mb="sm"
-          required
           label="Разрешить одинаковые буквы рядом"
           {...getInputProps('allowDoubles', {
             type: 'checkbox',

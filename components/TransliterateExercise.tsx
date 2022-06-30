@@ -9,10 +9,11 @@ import {
   useMantineTheme,
   ActionIcon,
   Stack,
+  TextInput,
 } from '@mantine/core';
 import { Settings } from 'tabler-icons-react';
 import { useMediaQuery } from '@mantine/hooks';
-import { useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { RU_LETTERS, RU_TO_GE } from '../constants/alphabet';
 import { TransliterateSettings } from '../types/transliterate.types';
 import { delay } from '../utils/delay';
@@ -32,6 +33,10 @@ function useTransliterateExercise(settings: TransliterateSettings) {
   const [currentWordInGe, setCurrentWordInGe] = useState<typeof RU_TO_GE[keyof typeof RU_TO_GE][]>(
     []
   );
+  const wordInGe = currentWord.map((letter) => getLetterTransliteration(RU_TO_GE, letter));
+  const [inputValue, setInputValue] = useState('');
+  const [error, setError] = useState<null | string>(null);
+  const [success, setSuccess] = useState<boolean>(false);
 
   const triggerLoading = async (timeout?: number) => {
     setLoading(true);
@@ -45,13 +50,15 @@ function useTransliterateExercise(settings: TransliterateSettings) {
 
     setCurrentWord([]);
     setCurrentWordInGe([]);
+    setSuccess(false);
+    setError(null);
+    setInputValue('');
     await triggerLoading();
     setCurrentWord(word);
   };
 
-  const handleShowInGe = async () => {
-    const wordInGe = currentWord.map((letter) => getLetterTransliteration(RU_TO_GE, letter));
-    await triggerLoading();
+  const handleShowInGe = async (shouldNotWait?: boolean) => {
+    !shouldNotWait && (await triggerLoading());
     setCurrentWordInGe(wordInGe);
   };
 
@@ -63,6 +70,60 @@ function useTransliterateExercise(settings: TransliterateSettings) {
   const showCurrentWordPlaceholder = !currentWordLoading && !currentWord.length;
   const currentWordInGePlaceholder = !currentWordInGeLoading && !currentWordInGe.length;
 
+  const validation = (value: string) => {
+    if (!value) {
+      return 'Значение не должно быть пустым';
+    }
+
+    const innerDivider = divider ? (value.indexOf(divider) !== -1 && divider) || '' : '';
+
+    const letters = value.trim().split(innerDivider).filter(Boolean);
+
+    console.log(`value`, value);
+    console.log(`letters`, letters);
+    console.log(`wordInGe`, wordInGe);
+
+    if (
+      letters
+        .map((l) => l)
+        .sort()
+        .join('') !==
+      wordInGe
+        .map((l) => l)
+        .sort()
+        .join('')
+    ) {
+      return 'Значения не совпадают';
+    }
+
+    return null;
+  };
+
+  console.log(`ge`, wordInGe);
+
+  const handleCheck = async () => {
+    await triggerLoading();
+    const error = validation(inputValue);
+    if (error) {
+      setError(error);
+    } else {
+      setSuccess(true);
+      handleShowInGe();
+    }
+  };
+
+  const inputProps = {
+    value: inputValue,
+    onChange: (event: FormEvent<HTMLInputElement>) => {
+      setInputValue((event.target as HTMLInputElement).value);
+    },
+    error,
+  };
+
+  useEffect(() => {
+    setError(null);
+  }, [inputValue]);
+
   return {
     handleGenerate,
     handleShowInGe,
@@ -73,6 +134,9 @@ function useTransliterateExercise(settings: TransliterateSettings) {
     currentWordInGeLoading,
     showCurrentWordPlaceholder,
     currentWordInGePlaceholder,
+    inputProps,
+    handleCheck,
+    success,
   };
 }
 
@@ -135,9 +199,35 @@ export const TransliterateExercise: React.FC<Props> = (props) => {
     currentWordInGeLoading,
     currentWordInGePlaceholder,
     showCurrentWordPlaceholder,
+    inputProps,
+    handleCheck,
+    success,
   } = useTransliterateExercise(settings);
   const { breakpoints } = useMantineTheme();
   const isLessThanMd = useMediaQuery(`(max-width: ${breakpoints.md}px)`);
+
+  const input = (
+    <Group direction="column">
+      <TextInput
+        disabled={currentWordLoading || !currentWord || currentWordInGeLoading}
+        label="Введите свой ответ"
+        sx={{ width: '100%' }}
+        {...inputProps}
+      />
+      {success && <Text color={'green'}>Правильно!</Text>}
+      {!success && (
+        <Button
+          disabled={currentWordLoading || !currentWord}
+          onClick={handleCheck}
+          fullWidth={false}
+          loading={(!!currentWord && currentWordLoading) || currentWordInGeLoading}
+          type={'submit'}
+        >
+          Проверить
+        </Button>
+      )}
+    </Group>
+  );
 
   if (isLessThanMd) {
     return (
@@ -181,6 +271,9 @@ export const TransliterateExercise: React.FC<Props> = (props) => {
               Тут будет показано правильное написание
             </Text>
           )}
+        </Paper>
+        <Paper shadow="md" radius="md" p="md" withBorder>
+          {input}
         </Paper>
       </Stack>
     );
@@ -232,6 +325,11 @@ export const TransliterateExercise: React.FC<Props> = (props) => {
                 Тут будет показано правильное написание
               </Text>
             )}
+          </Paper>
+        </Grid.Col>
+        <Grid.Col span={12}>
+          <Paper shadow="md" radius="md" mb="md" p="md" withBorder>
+            {input}
           </Paper>
         </Grid.Col>
       </Grid>
